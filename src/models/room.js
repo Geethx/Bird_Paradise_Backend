@@ -1,0 +1,24 @@
+import mongoose from "mongoose";
+
+const roomSchema = new mongoose.Schema({
+  room_number: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  room_type: {
+    type: String, 
+    required: true,
+  },
+  price: {
+    type: Number, 
+    required: true,
+  },
+  availability_status: {
+    type: Boolean, 
+    default: true, 
+  },
+});
+
+const Room = mongoose.model("Room", roomSchema);
+export default Room;
