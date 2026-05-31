@@ -1,6 +1,9 @@
 import Admin from '../models/Admin.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import Booking from '../models/Booking.js';
+import Room from '../models/Room.js';
+
 
 export async function registerAdmin(req, res) {
     try {
@@ -45,8 +48,43 @@ export async function loginAdmin(req, res) {
             { expiresIn: "1d" },
         )
 
-        res.status(200).json({ token: token , message: "Login successful.", admin: { id: admin._id, username: admin.username, role: admin.role } });
+        res.status(200).json({ token: token, message: "Login successful.", admin: { id: admin._id, username: admin.username, role: admin.role } });
     } catch (error) {
         res.status(500).json({ message: "Error logging in admin.", error: error.message });
+    }
+}
+
+export async function generateReports(req, res) {
+    try {
+            const totalRooms = await Room.countDocuments();
+            const totalCancellations = await Booking.countDocuments({ booking_status: 'cancelled' });
+
+            const confirmedBookings = await Booking.find({ booking_status: 'confirmed'}).populate('room_id');
+
+            let totalRevenue = 0;
+
+            confirmedBookings.forEach(booking => {
+                const checkIn = new Date(booking.check_in_date);
+                const checkOut = new Date(booking.check_out_date);
+                const timeDiff = Math.abs(checkOut.getTime() - checkIn.getTime());
+                const diffDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+                if (booking.room_id && booking.room_id.price) {
+                    totalRevenue += (booking.room_id.price * diffDays);
+                }
+            });
+
+            res.status(200).json({
+                message: "Reports Generated Successfully!",
+                reports: {
+                    totalRooms: totalRooms,
+                    totalCancellations: totalCancellations,
+                    totalRevenue: totalRevenue,
+                    totalConfirmedBookings: confirmedBookings.length,
+                }
+            });
+    } catch (error) {
+            console.error("Error generating reports:", error);
+            res.status(500).json({ message: "Error generating reports.", error: error.message });
     }
 }

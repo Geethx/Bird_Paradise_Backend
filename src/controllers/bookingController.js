@@ -5,6 +5,21 @@ export async function createBooking(req, res) {
   try {
     const { check_in_date, check_out_date, guest_id, room_id } = req.body;
 
+    const checkIn = new Date(check_in_date);
+    const checkOut = new Date(check_out_date);
+
+    const overlappingBookings = await Booking.find({
+      room_id: room_id,
+      booking_status: { $nin: ['cancelled','rejected'] },
+      $or: [
+        { check_in_date: { $lt: checkOut }, check_out_date: { $gt: checkIn } }
+      ]
+    });
+
+    if (overlappingBookings.length > 0) {
+      return res.status(400).json({ message: 'Room is already booked for the selected dates.' });
+    }
+
     const newBooking = new Booking({
       check_in_date,
       check_out_date,
@@ -13,8 +28,6 @@ export async function createBooking(req, res) {
     });
 
     await newBooking.save();
-
-    await Room.findByIdAndUpdate(room_id, { availability_status: false });
 
     res
       .status(201)
@@ -68,7 +81,7 @@ export async function cancelBooking(req, res) {
     booking.booking_status = 'cancelled';
     await booking.save();
 
-    await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
+    // await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
 
     res.status(200).json({ message: 'Booking cancelled successfully.', booking });
   } catch (error) {
@@ -119,7 +132,7 @@ export async function rejectBooking(req, res) {
     booking.booking_status = 'rejected';
     await booking.save();
 
-    await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
+    // await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
 
     res.status(200).json({ message: 'Booking rejected successfully.', booking });
   } catch (error) {
