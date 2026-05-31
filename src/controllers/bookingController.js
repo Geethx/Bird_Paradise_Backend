@@ -127,3 +127,15 @@ export async function rejectBooking(req, res) {
     res.status(500).json({ message: 'Something went wrong, please try again.', error: error.message });
   }
 }
+
+export async function getMyBookings(req, res) {
+  try {
+    const myBookings = await Booking.find({ guest_id:req.user.id })
+      .populate("room_id", "room_number room_type price");
+
+    res.status(200).json({ bookings: myBookings });
+  } catch (error) {
+    console.error("Error fetching my bookings:", error);
+    res.status(500).json({ message: "Something went wrong, please try again.", error: error.message });
+  }
+}

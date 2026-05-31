@@ -72,3 +72,13 @@ export async function loginGuest(req, res) {
     });
   }
 }
+
+export async function getAllGuests(req, res) {
+  try {
+    const guests = await Guest.find().select('-password');
+    res.status(200).json({ guests: guests });
+  } catch (error) {
+    console.error('Error fetching guests:', error);
+    res.status(500).json({ message: 'Failed to fetch guests', error: error.message });
+  }
+}
