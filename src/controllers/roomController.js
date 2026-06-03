@@ -1,5 +1,5 @@
 import Room from "../models/Room.js";
-import Booking  from "../models/Booking.js";
+import Booking from "../models/Booking.js";
 
 export async function createRoom(req, res) {
   try {
@@ -78,22 +78,22 @@ export async function deleteRoom(req, res) {
 
 export async function searchAvailableRooms(req, res) {
   try {
-    const { checkIn, checkOut } = req.query;
+    const { checkIn, checkOut, roomType } = req.query;
 
     if (!checkIn || !checkOut) {
-      return res.status(400).json({ message: "checkin and checkout dates are required."});
+      return res.status(400).json({ message: "checkin and checkout dates are required." });
     }
 
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
     if (checkInDate >= checkOutDate) {
-      return res.status(400).json({message: "Check-out date must be after check-in date."});
+      return res.status(400).json({ message: "Check-out date must be after check-in date." });
     }
 
     const overlappingBookings = await Booking.find({
       $and: [
-        { booking_status: { $nin: ["cancelled", "rejected"]}},
+        { booking_status: { $nin: ["cancelled", "rejected"] } },
         {
           $or: [
             { check_in_date: { $lt: checkOutDate }, check_out_date: { $gt: checkInDate } }
@@ -104,10 +104,17 @@ export async function searchAvailableRooms(req, res) {
 
     const bookedRoomIds = overlappingBookings.map(booking => booking.room_id);
 
-    const availableRooms = await Room.find({
+    let roomQuery = {
       _id: { $nin: bookedRoomIds },
       availability_status: true,
-    });
+    };
+
+    if (roomType) {
+      roomQuery.room_type = roomType;
+    }
+
+    const availableRooms = await Room.find(roomQuery);
+
 
     res.status(200).json({
       rooms: availableRooms
@@ -124,20 +131,20 @@ export async function updateAvailability(req, res) {
     const { availability_status } = req.body;
 
     if (typeof availability_status !== 'boolean') {
-      return res.status(400).json({message: "Availability status must be true or false."});
+      return res.status(400).json({ message: "Availability status must be true or false." });
     }
 
     const updatedRoom = await Room.findByIdAndUpdate(req.params.id, {
       availability_status: availability_status
-    }, 
-    { new: true, runValidators: true });
+    },
+      { new: true, runValidators: true });
 
     if (!updatedRoom) {
-      return res.status(404).json({ message: 'Room not found.'});
+      return res.status(404).json({ message: 'Room not found.' });
     }
 
     res.status(200).json({ message: 'Availability updated successfully.', room: updatedRoom });
-    
+
   } catch (error) {
     console.error("Error updating room availability:", error);
     res.status(500).json({ message: 'Failed to update availability', error: error.message });

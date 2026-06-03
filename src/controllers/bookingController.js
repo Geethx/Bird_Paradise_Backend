@@ -81,7 +81,7 @@ export async function cancelBooking(req, res) {
     booking.booking_status = 'cancelled';
     await booking.save();
 
-    // await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
+    await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
 
     res.status(200).json({ message: 'Booking cancelled successfully.', booking });
   } catch (error) {
