@@ -1,8 +1,13 @@
 import Room from "../models/Room.js";
 import Booking from "../models/Booking.js";
+import { createClient } from "@supabase/supabase-js";
 
 export async function createRoom(req, res) {
   try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_KEY
+    );
     const { room_number, room_type, price } = req.body;
 
     const existingRoom = await Room.findOne({ room_number });
@@ -10,26 +15,51 @@ export async function createRoom(req, res) {
       return res.status(400).json({ message: "Room number already exists." });
     }
 
+    let imageUrls = [];
+
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+
+        const fileName = `${Date.now()}_${file.originalname.replace(/\s+/g, '_')}`;
+
+        const { data, error } = await supabase.storage
+          .from('hotel-images')
+          .upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+          });
+
+        if (error) {
+          console.error("Supabase Error:", error);
+          throw new Error("Failed to upload image to Supabase");
+        }
+
+        const publicUrl = supabase.storage
+          .from('hotel-images')
+          .getPublicUrl(fileName).data.publicUrl;
+
+        imageUrls.push(publicUrl);
+      }
+    }
     const newRoom = new Room({
       room_number,
       room_type,
       price,
+      images: imageUrls,
     });
 
     await newRoom.save();
-    res
-      .status(201)
-      .json({ message: "Room created successfully!", room: newRoom });
+
+    res.status(201).json({ message: "Room created successfully!", room: newRoom });
+
   } catch (error) {
     console.error("Error creating room:", error);
-    res
-      .status(500)
-      .json({
-        message: "Something went wrong, please try again.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Something went wrong, please try again.",
+      error: error.message,
+    });
   }
 }
+
 
 export async function getAllRooms(req, res) {
   try {
@@ -64,12 +94,15 @@ export async function updateRoom(req, res) {
 export async function deleteRoom(req, res) {
   try {
     const deletedRoom = await Room.findByIdAndDelete(req.params.id);
-
     if (!deletedRoom) {
       return res.status(404).json({ message: 'Room not found.' });
     }
 
-    res.status(200).json({ message: 'Room deleted successfully.' });
+    await Booking.deleteMany({
+      room_id: req.params.id,
+      booking_status: 'pending'
+    });
+    res.status(200).json({ message: 'Room deleted. Pending bookings removed, history kept.' });
   } catch (error) {
     console.error('Error deleting room:', error);
     res.status(500).json({ message: 'Failed to delete room', error: error.message });

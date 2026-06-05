@@ -8,21 +8,27 @@ const roomSchema = new mongoose.Schema({
   },
 
   room_type: {
-    type: String, 
+    type: String,
     required: true,
     enum: ['single', 'double', 'suite', 'family']
   },
 
   price: {
-    type: Number, 
+    type: Number,
+    required: true,
+  },
+
+  images: {
+    type: [String],
+    default: [],
     required: true,
   },
 
   availability_status: {
-    type: Boolean, 
-    default: true, 
+    type: Boolean,
+    default: true,
   },
-  
+
 });
 
 const Room = mongoose.model("Room", roomSchema);

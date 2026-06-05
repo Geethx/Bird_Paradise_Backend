@@ -47,7 +47,7 @@ export async function getAllBookings(req, res) {
   try {
     const bookings = await Booking.find()
       .populate("guest_id", "name email phone")
-      .populate("room_id", "room_number room_type price");
+      .populate("room_id", "room_number room_type price images");
     res.status(200).json({ bookings });
   } catch (error) {
     console.error("Error fetching bookings:", error);
@@ -144,7 +144,7 @@ export async function rejectBooking(req, res) {
 export async function getMyBookings(req, res) {
   try {
     const myBookings = await Booking.find({ guest_id:req.user.id })
-      .populate("room_id", "room_number room_type price");
+      .populate("room_id", "room_number room_type price images");
 
     res.status(200).json({ bookings: myBookings });
   } catch (error) {
