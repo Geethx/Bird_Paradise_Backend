@@ -18,7 +18,8 @@ const guestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-});
+}, { timestamps: true }
+);
 
 const Guest = mongoose.model("Guest", guestSchema);
 export default Guest;
