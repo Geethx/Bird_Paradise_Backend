@@ -5,8 +5,20 @@ export async function createBooking(req, res) {
   try {
     const { check_in_date, check_out_date, guest_id, room_id } = req.body;
 
+    if (!check_in_date || !check_out_date) {
+      return res.status(400).json({ message: "Check-in and Check-out dates are required." });
+    }
+
     const checkIn = new Date(check_in_date);
     const checkOut = new Date(check_out_date);
+
+    if (isNaN(checkIn.valueOf()) || isNaN(checkOut.valueOf())) {
+      return res.status(400).json({ message: "Invalid date format." });
+    }
+
+    if (checkOut <= checkIn) {
+      return res.status(400).json({ message: "Check-out date must be after check-in date." });
+    }
 
     const overlappingBookings = await Booking.find({
       room_id: room_id,
@@ -28,9 +40,7 @@ export async function createBooking(req, res) {
     });
 
     await newBooking.save();
-    await Room.findByIdAndUpdate(room_id, {
-      availability_status: false
-    });
+
     res
       .status(201)
       .json({ message: "Booking created successfully!", booking: newBooking });
@@ -109,14 +119,13 @@ export async function confirmBooking(req, res) {
     booking.booking_status = 'confirmed';
     await booking.save();
     await Booking.updateMany(
-      { 
-        room_id: booking.room_id, 
+      {
+        room_id: booking.room_id,
         _id: { $ne: booking._id },
-        booking_status: 'pending' 
+        booking_status: 'pending'
       },
       { booking_status: 'rejected' }
     );
-    await Room.findByIdAndUpdate(booking.room_id, { availability_status: false });
 
     res.status(200).json({ message: 'Booking confirmed successfully.', booking });
   } catch (error) {
