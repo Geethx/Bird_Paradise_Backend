@@ -6,6 +6,7 @@ import {
   confirmBooking,
   rejectBooking,
   getMyBookings,
+  getRoomBookedDates,
 } from '../controllers/bookingController.js';
 import { authenticateAdmin, authenticateGuest } from '../middleware/auth.js';
 
@@ -22,6 +23,8 @@ router.patch('/:id/cancel', authenticateGuest, cancelBooking);
 router.patch('/:id/confirm', authenticateAdmin, confirmBooking);
 
 router.patch('/:id/reject', authenticateAdmin, rejectBooking);
+
+router.get('/:id/booked-dates', getRoomBookedDates);
 
 
 

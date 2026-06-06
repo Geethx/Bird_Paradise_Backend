@@ -172,3 +172,17 @@ export async function getMyBookings(req, res) {
     res.status(500).json({ message: "Something went wrong, please try again.", error: error.message });
   }
 }
+
+export async function getRoomBookedDates(req, res) {
+  try {
+    const bookings = await Booking.find({
+      room_id: req.params.id,
+      booking_status: 'confirmed'
+    }).select('check_in_date check_out_date');
+
+    res.status(200).json({ bookedDates: bookings });
+
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong, please try again.", error: error.message });
+  }
+}

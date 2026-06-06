@@ -63,13 +63,35 @@ export async function createRoom(req, res) {
 
 export async function getAllRooms(req, res) {
   try {
-    const rooms = await Room.find();
-    res.status(200).json(rooms);
+    const rooms = await Room.find().lean();
+
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date(todayStr);
+
+
+    const activeBookings = await Booking.find({
+      booking_status: 'confirmed',
+      check_in_date: { $lte: today },
+      check_out_date: { $gt: today }
+    });
+
+
+    const occupiedRoomIds = new Set(activeBookings.map(b => b.room_id.toString()));
+
+
+    const roomsWithStatus = rooms.map(room => ({
+      ...room,
+      is_occupied_today: occupiedRoomIds.has(room._id.toString())
+    }));
+
+    res.status(200).json(roomsWithStatus);
   } catch (error) {
     console.error("Error fetching rooms:", error);
     res.status(500).json({ message: "Something went wrong, please try again.", error: error.message });
   }
 }
+
 
 export async function updateRoom(req, res) {
   try {
