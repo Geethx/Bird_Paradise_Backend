@@ -1,5 +1,5 @@
-import Room from "../models/Room.js";
-import Booking from "../models/Booking.js";
+import Room from "../models/room.js";
+import Booking from "../models/booking.js";
 import { createClient } from "@supabase/supabase-js";
 
 export async function createRoom(req, res) {
