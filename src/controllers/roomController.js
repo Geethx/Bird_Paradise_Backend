@@ -1,5 +1,5 @@
-import Room from "../models/room.js";
-import Booking from "../models/booking.js";
+import Room from "../models/Room.js";
+import Booking from "../models/Booking.js";
 import { createClient } from "@supabase/supabase-js";
 
 export async function createRoom(req, res) {
@@ -148,7 +148,7 @@ export async function searchAvailableRooms(req, res) {
 
     const overlappingBookings = await Booking.find({
       $and: [
-        { booking_status: { $nin: ["cancelled", "rejected"] } },
+        { booking_status: 'confirmed' },
         {
           $or: [
             { check_in_date: { $lt: checkOutDate }, check_out_date: { $gt: checkInDate } }

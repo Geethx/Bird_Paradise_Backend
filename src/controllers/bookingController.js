@@ -3,7 +3,7 @@ import Room from "../models/Room.js";
 
 export async function createBooking(req, res) {
   try {
-    const { check_in_date, check_out_date, guest_id, room_id } = req.body;
+    const { check_in_date, check_out_date, guest_id, room_id, total_price } = req.body;
 
     if (!check_in_date || !check_out_date) {
       return res.status(400).json({ message: "Check-in and Check-out dates are required." });
@@ -32,11 +32,20 @@ export async function createBooking(req, res) {
       return res.status(400).json({ message: 'Room is already booked for the selected dates.' });
     }
 
+    const room = await Room.findById(room_id);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found." });
+    }
+
+    const totalDays = Math.max(1, Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
+    const secureTotalPrice = totalDays * room.price;
+
     const newBooking = new Booking({
       check_in_date,
       check_out_date,
       guest_id,
       room_id,
+      total_price: secureTotalPrice
     });
 
     await newBooking.save();
@@ -93,7 +102,6 @@ export async function cancelBooking(req, res) {
     booking.booking_status = 'cancelled';
     await booking.save();
 
-    await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
 
     res.status(200).json({ message: 'Booking cancelled successfully.', booking });
   } catch (error) {
@@ -122,7 +130,9 @@ export async function confirmBooking(req, res) {
       {
         room_id: booking.room_id,
         _id: { $ne: booking._id },
-        booking_status: 'pending'
+        booking_status: 'pending',
+        check_in_date: { $lt: booking.check_out_date },
+        check_out_date: { $gt: booking.check_in_date }
       },
       { booking_status: 'rejected' }
     );
@@ -152,7 +162,6 @@ export async function rejectBooking(req, res) {
     booking.booking_status = 'rejected';
     await booking.save();
 
-    await Room.findByIdAndUpdate(booking.room_id, { availability_status: true });
 
     res.status(200).json({ message: 'Booking rejected successfully.', booking });
   } catch (error) {

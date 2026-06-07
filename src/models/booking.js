@@ -33,6 +33,12 @@ const bookingSchema = new mongoose.Schema({
     ref: "Room",
     required: true,
   },
+
+  total_price: {
+    type: Number,
+    required: true,
+  },
+  
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
