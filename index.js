@@ -17,8 +17,8 @@ app.use(cors());
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("Successfully connected to MongoDB"))
-  .catch((err) => console.log("Failed to connect to MongoDB", err));
+  .then(() => console.log("Successfully connected to MongoDB!"))
+  .catch((err) => console.log("Failed to connect to MongoDB!", err));
 
 app.use("/api/guests", guestRoutes);
 app.use("/api/rooms", roomRoutes);
@@ -28,5 +28,5 @@ app.use("/api/chat", chatRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}!`);
 });

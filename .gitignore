@@ -10,7 +10,6 @@ lerna-debug.log*
 # Environment variables
 .env
 .env.*
-!.env.example
 
 # Build outputs
 dist/
@@ -96,13 +95,6 @@ pids/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variables file
-.env.test
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
