@@ -3,7 +3,7 @@ import Room from "../models/Room.js";
 
 export async function createBooking(req, res) {
   try {
-    const { check_in_date, check_out_date, guest_id, room_id, total_price } = req.body;
+    const { check_in_date, check_out_date, guest_id, room_id} = req.body;
 
     if (!check_in_date || !check_out_date) {
       return res.status(400).json({ message: "Check-in and Check-out dates are required." });
