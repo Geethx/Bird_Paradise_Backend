@@ -1,4 +1,4 @@
-import Guest from "../models/Guest.js";
+import Guest from "../models/guest.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 

@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import Room from "../models/Room.js";
-import Booking from "../models/Booking.js";
+import Room from "../models/room.js";
+import Booking from "../models/booking.js";
 
 export async function handleChat(req, res) {
     try {

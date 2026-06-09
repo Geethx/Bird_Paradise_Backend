@@ -1,8 +1,8 @@
-import Admin from '../models/Admin.js';
+import Admin from '../models/admin.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import Booking from '../models/Booking.js';
-import Room from '../models/Room.js';
+import Booking from '../models/booking.js';
+import Room from '../models/room.js';
 
 
 export async function registerAdmin(req, res) {
